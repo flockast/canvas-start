@@ -35,7 +35,7 @@ function scaleCanvas (canvas, ctx, width, height) {
 }
 
 
-function Canvas (sketch, settings) {
+function CanvasSetup (sketch, settings) {
   settings = {
     element: 'canvas',
     width: 500,
@@ -91,4 +91,4 @@ function Canvas (sketch, settings) {
   render()
 }
 
-export default Canvas
+export default CanvasSetup

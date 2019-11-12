@@ -1,4 +1,4 @@
-import Canvas from './Canvas'
+import CanvasSetup from './CanvasSetup'
 
 const settings = {
   full: true,
@@ -56,4 +56,4 @@ const sketch = ({ ctx, width, height }) => {
   }
 }
 
-Canvas(sketch, settings)
+CanvasSetup(sketch, settings)
