@@ -2,28 +2,30 @@ import CanvasSetup from './CanvasSetup'
 
 const settings = {
   full: true,
-  background: 'hsl(200, 30%, 40%)'
+  onResize ({ width, height }) {
+    startPoint(width, height)
+  }
+}
+
+let distance, size, speed, dir, dots
+
+const startPoint = (width, height) => {
+  distance = 100
+  size = 50
+  speed = 8
+  dir = 1
+  dots = []
+  for (let i = size; i < width; i += distance) {
+    for (let j = size; j < height; j += distance) {
+      dots.push({
+        x: i,
+        y: j
+      })
+    }
+  }
 }
 
 const sketch = ({ ctx, width, height }) => {
-  const distance = 100
-  const size = 50
-  let speed = 8
-  let dir = 1
-  let dots = []
-
-  const initial = (width, height) => {
-    dots = []
-    for (let i = size; i < width; i += distance) {
-      for (let j = size; j < height; j += distance) {
-        dots.push({
-          x: i,
-          y: j
-        })
-      }
-    }
-  }
-
   const draw = () => {
     dots.forEach(dot => {
       ctx.beginPath()
@@ -42,13 +44,7 @@ const sketch = ({ ctx, width, height }) => {
     })
   }
 
-  initial(width, height)
-
-  window.addEventListener('resize', () => {
-    width = window.innerWidth
-    height = window.innerHeight
-    initial(width, height)
-  })
+  startPoint(width, height)
 
   return () => {
     draw()

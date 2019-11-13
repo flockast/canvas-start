@@ -34,23 +34,28 @@ function scaleCanvas (canvas, ctx, width, height) {
   ctx.scale(ratio, ratio)
 }
 
-
 function CanvasSetup (sketch, settings) {
   settings = {
-    element: 'canvas',
-    width: 500,
-    height: 500,
+    element: null,
+    width: 640,
+    height: 480,
     full: false,
-    background: 'white',
-    resize: false,
+    bg: 'hsl(90, 90%, 90%)',
+    resize: true,
+    clear: true,
+    loop: true,
+    onResize() {},
     ...settings
   }
 
-  let canvas, ctx
+  let canvas, ctx, width, height
 
-  canvas = document.querySelector(settings.element)
-
-  if (!canvas) {
+  if (settings.element !== null) {
+    canvas = document.querySelector(settings.element)
+    if (!canvas) {
+      throw Error (`Element "${settings.element}" was not found`)
+    }
+  } else {
     canvas = document.createElement('canvas')
     document.body.appendChild(canvas)
   }
@@ -58,36 +63,56 @@ function CanvasSetup (sketch, settings) {
   ctx = canvas.getContext('2d')
 
   if (settings.full) {
-    settings.width = window.innerWidth
-    settings.height = window.innerHeight
+    width = window.innerWidth
+    height = window.innerHeight
+  } else {
+    width = settings.width > window.innerWidth ? window.innerWidth : settings.width
+    height = width * settings.height / settings.width
+  }
+
+  scaleCanvas(canvas, ctx, width, height)
+
+  const args = {
+    ...settings,
+    canvas,
+    ctx,
+    width,
+    height
+  }
+
+  // Added Events on resize
+  if (settings.full) {
     window.addEventListener('resize', () => {
-      settings.width = window.innerWidth
-      settings.height = window.innerHeight
-      scaleCanvas(canvas, ctx, window.innerWidth, window.innerHeight)
+      width = window.innerWidth
+      height = window.innerHeight
+      scaleCanvas(canvas, ctx, width, height)
+      settings.onResize({ ...args, width, height })
+    })
+  } else if (settings.resize) {
+    window.addEventListener('resize', () => {
+      width = settings.width > window.innerWidth ? window.innerWidth : settings.width
+      height = width * settings.height / settings.width
+      scaleCanvas(canvas, ctx, width, height)
+      settings.onResize({ ...args, width, height })
     })
   }
 
-  scaleCanvas(canvas, ctx, settings.width, settings.height)
-
-  const clear = (width, height) => {
+  const clearCanvas = (width, height) => {
     const { fillStyle }  = ctx
-    ctx.fillStyle = settings.background
+    ctx.fillStyle = settings.bg
     ctx.fillRect(0, 0, width, height)
     ctx.fillStyle = fillStyle
   }
 
-  const loop = sketch({
-    ...settings,
-    canvas,
-    ctx
-  })
+  const main = sketch(args)
 
   const render = (step) => {
-    clear(settings.width, settings.height)
-    loop(step)
-    requestAnimationFrame(render)
+    if (settings.clear) clearCanvas(width, height)
+    main(step)
+    if (settings.loop) requestAnimationFrame(render)
   }
 
+  clearCanvas(width, height)
   render()
 }
 
